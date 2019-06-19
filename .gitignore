@@ -1,0 +1,12 @@
+
+# CLion
+/cmake-build-*/
+
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/misc.xml
+/.idea/ushiro.iml
+/.idea/vcs.xml
+
+/build/
+
