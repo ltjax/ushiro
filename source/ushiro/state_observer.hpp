@@ -129,6 +129,8 @@ template <typename Model> class state_observer
 {
 public:
 
+  state_observer() = default;
+
   explicit state_observer(link<Model> link_)
   : m_link(std::move(link_))
   {
