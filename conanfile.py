@@ -3,7 +3,7 @@ from conans import ConanFile, CMake, tools
 
 class UshiroConan(ConanFile):
     name = "ushiro"
-    version = "0.1"
+    version = "0.2"
     license = "MIT"
     author = "Marius Elvert marius.elvert@googlemail.com"
     url = "https://github.com/ltjax/ushiro"

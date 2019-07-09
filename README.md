@@ -14,4 +14,4 @@ It is usually used together with a Qt based UI.
 # Interesting links
 
 * [lager](https://github.com/arximboldi/lager) is a great unidirectional UI library for C++
-* [redux](https://redux.js.org/) is probably the most famous unidrection UI library, but for JavaScript
+* [redux](https://redux.js.org/) is probably the most famous unidrectional UI library, but for JavaScript
