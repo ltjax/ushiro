@@ -141,31 +141,6 @@ public:
         return subscription(this, attach<Event>(std::forward<Handler>(handler)));
     }
 
-    class subscription_list
-    {
-    public:
-        subscription_list() = default;
-        ~subscription_list() = default;
-        subscription_list(subscription_list&&) = default;
-        subscription_list(subscription_list const&) = delete;
-        subscription_list& operator=(subscription_list const&) = delete;
-        subscription_list& operator=(subscription_list&&) = default;
-
-        subscription_list& operator+=(subscription rhs)
-        {
-            m_list.push_back(std::move(rhs));
-            return *this;
-        }
-
-        void clear()
-        {
-            m_list.clear();
-        }
-
-    private:
-        std::vector<subscription> m_list;
-    };
-
 private:
     template <class T> class concrete_wrapper : public event_wrapper
     {
@@ -186,6 +161,63 @@ private:
     };
 
     handler_map_t m_handlers;
+};
+
+/** Hold multiple subscriptions to the event_bus and disconnect them on destruction.
+ */
+class subscription_list
+{
+public:
+  subscription_list() = default;
+  ~subscription_list() = default;
+  subscription_list(subscription_list&&) = default;
+  subscription_list(subscription_list const&) = delete;
+  subscription_list& operator=(subscription_list const&) = delete;
+  subscription_list& operator=(subscription_list&&) = default;
+
+  subscription_list& operator+=(event_bus::subscription rhs)
+  {
+    m_list.push_back(std::move(rhs));
+    return *this;
+  }
+
+  void clear()
+  {
+    m_list.clear();
+  }
+
+  /** Helper class for more comfortable subscription via a builder-like interface.
+   */
+  class subscription_proxy
+  {
+  public:
+    subscription_proxy(subscription_list* list, event_bus* parent)
+      : m_list(list), m_bus(parent)
+    {
+    }
+    subscription_proxy(subscription_proxy const&) = default;
+    subscription_proxy& operator=(subscription_proxy const&) = default;
+
+    template <typename Event, typename Handler>
+    subscription_proxy subscribe(Handler&& handler) const
+    {
+      *m_list += m_bus->subscribe<Event>(std::forward<Handler>(handler));
+      return *this;
+    };
+
+  private:
+    subscription_list* m_list;
+    event_bus* m_bus;
+  };
+
+
+  subscription_proxy operator()(event_bus& bus)
+  {
+    return subscription_proxy(this, &bus);
+  }
+
+private:
+  std::vector<event_bus::subscription> m_list;
 };
 
 }
