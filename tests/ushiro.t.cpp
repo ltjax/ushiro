@@ -18,6 +18,11 @@ struct test_event
 {
 };
 
+struct insert_event
+{
+    int value;
+};
+
 struct counting_state
 {
   int counter_ = 0;
@@ -42,6 +47,23 @@ struct container_state
   }
 };
 
+struct throwing_state
+{
+    std::vector<int> ints_;
+
+    throwing_state apply(insert_event e) const
+    {
+        auto result = *this;
+        result.ints_.push_back(e.value);
+        return result;
+    }
+
+    throwing_state apply(test_event) const
+    {
+        throw std::runtime_error("the_error_message");
+    }
+};
+
 }
 
 TEST_CASE("can default construct the state")
@@ -55,6 +77,36 @@ TEST_CASE("can apply a simple event")
   ushiro::store<counting_state> store;
   store.apply(increase_counter{});
   REQUIRE(store.state.counter_ == 1);
+}
+
+TEST_CASE("exception handling during application")
+{
+    ushiro::store<throwing_state> store;
+
+    SECTION("falls thru without error_handler")
+    {
+        REQUIRE_THROWS_AS(store.apply(test_event{}), std::runtime_error);
+    }
+    SECTION("calls error_handler when set")
+    {
+        using namespace std::string_literals;
+        bool was_called = false;
+        store.error_handler = [&](std::exception const& e)
+        {
+            was_called = true;
+            REQUIRE(e.what() == "the_error_message"s);
+        };
+        REQUIRE(!was_called);
+        store.apply(test_event{});
+        REQUIRE(was_called);
+    }
+    SECTION("state stays unchanged after error")
+    {
+        store.apply(insert_event{ 33 });
+        REQUIRE(store.state.ints_ == std::vector<int>{ 33});
+        REQUIRE_THROWS_AS(store.apply(test_event{}), std::runtime_error);
+        REQUIRE(store.state.ints_ == std::vector<int>{ 33});
+    }
 }
 
 TEST_CASE("changed_handler")

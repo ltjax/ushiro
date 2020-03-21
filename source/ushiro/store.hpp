@@ -27,6 +27,7 @@ struct store
     }
     catch(std::exception const& e)
     {
+      state = std::move(last);
       if (!error_handler)
         throw;
       error_handler(e);
