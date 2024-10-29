@@ -1,5 +1,5 @@
-from conans import ConanFile, CMake, tools
-
+from conan import ConanFile
+from conan.tools.cmake import CMake, cmake_layout
 
 class UshiroConan(ConanFile):
     name = "ushiro"
@@ -11,22 +11,21 @@ class UshiroConan(ConanFile):
     topics = ("unidirectional-ui",)
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False]}
-    default_options = "shared=False"
-    generators = "cmake"
+    default_options = {"shared": False}
+    generators = "CMakeDeps", "CMakeToolchain"
     exports_sources = "source/*", "tests/*", "CMakeLists.txt"
-    requires = "Catch2/2.7.2@catchorg/stable",
-
-    def _configured_cmake(self):
-        cmake = CMake(self)
-        cmake.configure(source_folder=".")
-        return cmake
+    test_requires = "catch2/2.13.10",
 
     def build(self):
-        self._configured_cmake().build()
+        cmake = CMake(self)
+        cmake.configure()
+        cmake.build()
 
     def package(self):
-        self._configured_cmake().install()
+        CMake(self).install()
 
     def package_info(self):
         self.cpp_info.libs = ["ushiro"]
 
+    def layout(self):
+        cmake_layout(self)

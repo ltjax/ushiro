@@ -4,5 +4,5 @@ add_executable(tests
   ushiro.t.cpp)
 
 target_link_libraries(tests
-  PUBLIC CONAN_PKG::Catch2
+  PUBLIC Catch2::Catch2
   PUBLIC ushiro)
